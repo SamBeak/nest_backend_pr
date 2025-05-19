@@ -15,4 +15,10 @@ export class UsersService {
 			},
 		})
 	}
+	
+	async createUser(user: Pick<UsersModel, 'nickname' | 'email' | 'password'>) {
+		const newUser = this.usersRepository.create(user);
+		
+		return this.usersRepository.save(newUser);
+	}
  }
