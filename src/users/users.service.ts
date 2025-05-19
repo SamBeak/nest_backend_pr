@@ -7,4 +7,12 @@ export class UsersService {
 	constructor(
 		private readonly usersRepository: Repository<UsersModel>,
 	){}
-}
+	
+	async getUserByEmail(email: string) {
+		return this.usersRepository.findOne({
+			where: {
+				email,
+			},
+		})
+	}
+ }
