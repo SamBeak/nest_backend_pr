@@ -34,12 +34,27 @@ export class BaererTokenGuard implements CanActivate {
 export class AccessTokenGuard extends BaererTokenGuard {
 	async canActivate(context: ExecutionContext): Promise<boolean>{
 		
-		await super.canActivate(context);
-		
 		const req = context.switchToHttp().getRequest();
+		
+		await super.canActivate(context);
 		
 		if (req.tokenType !== 'access') {
 			throw new UnauthorizedException('엑세스 토큰이 아닙니다');
+		}
+		
+		return true;
+	}
+}
+@Injectable()
+export class RefreshTokenGuard extends BaererTokenGuard {
+	async canActivate(context: ExecutionContext): Promise<boolean>{
+		
+		const req = context.switchToHttp().getRequest();
+		
+		await super.canActivate(context);
+		
+		if (req.tokenType !== 'refresh') {
+			throw new UnauthorizedException('리프레시 토큰이 아닙니다');
 		}
 		
 		return true;

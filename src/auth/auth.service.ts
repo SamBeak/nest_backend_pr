@@ -51,16 +51,6 @@ export class AuthService {
 	}
 	
 	async loginWithEmail(user: Pick<UsersModel, 'email' | 'password'>) {
-		const hash = await bcrypt.hash(
-			user.password,
-			HASH_ROUND,
-		);
-		
-		const hashUser = {
-			...user,
-			password: hash,
-		}
-		
 		const existingUser = await this.authenticateWithEmailAndPassword(user);
 		
 		return this.loginUser(existingUser);
