@@ -69,4 +69,22 @@ export class AuthService {
 		
 		return this.loginUser(newUser);
 	}
+	
+	extractTokenFromHeader(header: string, isBearer: boolean) {
+		const splitToken = header.split(' ');
+		
+		const prefix = isBearer ? 'Bearer' : 'Basic';
+		
+		if(splitToken.length !== 2 || splitToken[0] !== prefix) {
+			throw new UnauthorizedException('토큰 형식이 잘못되었습니다.');
+		}
+		
+		const token = splitToken[1];
+		
+		if (!token) {
+			throw new UnauthorizedException('토큰이 없습니다.');
+		}
+		
+		return token;
+	}
 }
