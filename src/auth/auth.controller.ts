@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Headers, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -20,5 +20,31 @@ export class AuthController {
 	@Body('password') password: string,
   ) {
 	return this.authService.registerWithEmail({ nickname, email, password });
+  }
+  
+  @Post('token/access')
+  postTokenAccess(
+	@Headers('authorization') rowToken: string,
+  ) {
+	const token = this.authService.extractTokenFromHeader(rowToken, true);
+	
+	const newToken = this.authService.rotateToken(token, true);
+	
+	return {
+		accessToken: newToken,
+	}
+  }
+  
+  @Post('token/refresh')
+  postTokenRefresh(
+	@Headers('authorization') rowToken: string,
+  ) {
+	const token = this.authService.extractTokenFromHeader(rowToken, true);
+	
+	const newToken = this.authService.rotateToken(token, false);
+	
+	return {
+		refreshToken: newToken,
+	}
   }
 }

@@ -21,7 +21,7 @@ export class AuthService {
 		
 		const token = this.jwtService.sign(payload, {
 			secret: JWT_SECRET,
-			expiresIn: isRefreshToken ? '3600' : '300', // 3600s, 300s
+			expiresIn: isRefreshToken ? '30d' : '1h',
 		})
 		
 		return token;
@@ -86,5 +86,51 @@ export class AuthService {
 		}
 		
 		return token;
+	}
+	
+	decodeBasicToken(token: string) {
+		// decoded = 'email:password'
+		const decoded = Buffer.from(token, 'base64').toString('utf-8');
+		
+		const split = decoded.split(':');
+		
+		if (split.length !== 2) {
+			throw new UnauthorizedException('토큰 형식이 잘못되었습니다.');
+		}
+		const email = split[0];
+		const password = split[1];
+		
+		if (!email || !password) {
+			throw new UnauthorizedException('잘못된 토큰입니다.');
+		}
+		
+		return {
+			email,
+			password,
+		}
+	}
+	
+	verifyToken(token: string) {
+		try {
+			const decoded = this.jwtService.verify(token, {
+				secret: JWT_SECRET,
+			});
+			return decoded;
+		}
+		catch (e) {
+			throw new UnauthorizedException('잘못된 토큰입니다.');
+		}
+	}
+	
+	rotateToken(token: string, isRefreshToken: boolean) {
+		const decoded = this.jwtService.verify(token, {
+			secret: JWT_SECRET,
+		});
+		
+		if(decoded.type !== 'refresh') {
+			throw new UnauthorizedException('토큰 재발급은 리프레시 토큰만 가능합니다.');
+		}
+		
+		return this.signToken(decoded, isRefreshToken);
 	}
 }
