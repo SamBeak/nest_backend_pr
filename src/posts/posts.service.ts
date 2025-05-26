@@ -31,12 +31,12 @@ export class PostsService {
     
     async createPost(authorId: number, postDto: CreatePostDto,) {
         const post = this.postsRepository.create({
-            // author: {
-            //     id: authorId,
-            // },
+            author: {
+                id: authorId,
+            },
             ...postDto,
-            // likeCount: 0,
-            // commentCount: 0,
+            likeCount: 0,
+            commentCount: 0,
         });
         
         const newPost = await this.postsRepository.save(post);
