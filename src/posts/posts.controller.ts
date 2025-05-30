@@ -4,6 +4,7 @@ import { User } from 'src/users/decorator/users.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
 @Controller('posts')
 export class PostsController {
@@ -17,6 +18,11 @@ export class PostsController {
   }
   
   @Post()
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "게시글 생성",
+    description: "게시글을 생성합니다.",
+  })
   @UseGuards(AccessTokenGuard)
   async postPosts(
     @User('id') userId: number,
@@ -28,6 +34,11 @@ export class PostsController {
   }
   
   @Patch(":postId")
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "게시글 수정",
+    description: "게시글을 수정합니다.",
+  })
   @UseGuards(AccessTokenGuard)
   async patchPost(
     @Param('postId', ParseIntPipe) postId: number,
