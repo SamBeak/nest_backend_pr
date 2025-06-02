@@ -19,4 +19,8 @@ export class PaginatePostDto {
     @IsNumber()
     @IsOptional()
     take: number = 20;
+	
+	@IsNumber()
+	@IsOptional()
+	page?: number;
 }
