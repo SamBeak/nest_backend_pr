@@ -5,6 +5,10 @@ export class PaginatePostDto {
     @IsNumber()
     @IsOptional()
     where__id_more_than?: number;
+	
+	@IsNumber()
+	@IsOptional()
+	where__id_less_than?: number;
     
     // 정렬
     @IsIn(['ASC', 'DESC'])
