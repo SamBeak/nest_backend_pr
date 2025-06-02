@@ -17,7 +17,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true, // dto에 정의된 타입으로 자동 변환
+  }));
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

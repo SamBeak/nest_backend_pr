@@ -1,14 +1,22 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { User } from 'src/users/decorator/users.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { PaginatePostDto } from './dto/paginate-post.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
+  
+  @Get()
+  getPosts(
+    @Query() query: PaginatePostDto,
+  ) {
+    return this.postsService.paginatePosts(query);
+  }
   
   @Get(':id')
   getPost(
