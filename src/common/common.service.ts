@@ -22,18 +22,20 @@ export class CommonService {
 		}
 	}
 	
-	private async pagePaginate<T>(
+	private async pagePaginate<T extends BaseModel>(
 		dto: BasePaginationDto,
 		repository: Repository<T>,
 		overrideFindOptions: FindManyOptions<T> = {},
 	) {
-		const [items, count] = await repository.findAndCount({
-			skip: dto.take * (dto.page - 1),
-			take: dto.take,
-		})
+		const findOptions = this.composeFindOptions<T>(dto);
+		
+		const [data, count] = await repository.findAndCount({
+			...findOptions,
+			...overrideFindOptions,
+		});
 		
 		return {
-			data: items,
+			data,
 			total: count,
 		}
 	}
