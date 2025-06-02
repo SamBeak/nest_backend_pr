@@ -5,6 +5,7 @@ import { MoreThan, Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
+import { API_URL } from 'src/common/const/env.const';
 
 @Injectable()
 export class PostsService {
@@ -30,8 +31,37 @@ export class PostsService {
             take: dto.take,
         });
         
+        const lastItem = (posts.length > 0 && posts.length === dto.take) ? posts[posts.length - 1] : null;
+        
+        const nextUrl = lastItem && new URL(`${API_URL}/posts`);
+        if (nextUrl) {
+            for(const key of Object.keys(dto)) {
+                if(dto[key]) {
+                    if(key !== 'where__id_more_than') {
+                        nextUrl.searchParams.append(key, dto[key]);
+                    }
+                }
+            }
+            
+            nextUrl.searchParams.append("where__id_more_than", lastItem.id.toString());
+        }
+        
         return {
             data: posts,
+            count: posts.length,
+            cursor: {
+                after: lastItem?.id ?? null,
+            },
+            next: nextUrl?.toString() ?? null,
+        }
+    }
+    
+    async generatePosts(userId: number) {
+        for(let i=0; i< 100; i++) {
+            await this.createPost(userId, {
+                title: `임의로 생성된 포스트 제목 ${i}`,
+                content: `임의로 생성된 포스트 내용 ${i}`,
+            });
         }
     }
     

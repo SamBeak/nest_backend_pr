@@ -6,6 +6,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PaginatePostDto } from './dto/paginate-post.dto';
+import { UsersModel } from 'src/users/entities/users.entity';
 
 @Controller('posts')
 export class PostsController {
@@ -53,5 +54,13 @@ export class PostsController {
     @Body() body: UpdatePostDto,
   ) {
     return this.postsService.updatePost(postId, body);
+  }
+  
+  @Post('random')
+  @UseGuards(AccessTokenGuard)
+  async postPostsRandom(@User() user: UsersModel) {
+    await this.postsService.generatePosts(user.id);
+    
+    return true;
   }
 }
