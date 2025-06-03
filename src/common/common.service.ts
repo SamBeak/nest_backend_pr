@@ -138,6 +138,10 @@ export class CommonService {
 			if(operator === "between") {
 				options[field] = FILTER_MAPPER[operator](values[0], values[1]);
 			}
+			else if(operator === 'i_like') {
+				// LIKE %value% 쿼리와 같은 동작
+				options[field] = FILTER_MAPPER[operator](`%${value}%`);
+			}
 			else {
 				options[field] = FILTER_MAPPER[operator](values);
 			}
