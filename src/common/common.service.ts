@@ -3,10 +3,15 @@ import { FindManyOptions, FindOptionsOrder, FindOptionsWhere, Repository } from 
 import { BasePaginationDto } from './dto/base-pagination.dto';
 import { BaseModel } from './entities/base.entity';
 import { FILTER_MAPPER } from './const/filter-mapper.const';
-import { API_URL } from './const/env.const';
+import { ConfigService } from '@nestjs/config';
+import { ENV_API_URL_KEY } from './const/env-keys.const';
 
 @Injectable()
 export class CommonService {
+	
+	constructor(
+		private readonly configService: ConfigService,
+	){}
 	
 	paginate<T extends BaseModel>(
 		dto: BasePaginationDto,
@@ -55,7 +60,7 @@ export class CommonService {
 		
 		const lastItem = (results.length > 0 && results.length === dto.take) ? results[results.length - 1] : null;
         
-        const nextUrl = lastItem && new URL(`${API_URL}/${path}`);
+        const nextUrl = lastItem && new URL(`${this.configService.get<string>(ENV_API_URL_KEY)}/${path}`);
         if (nextUrl) {
             for(const key of Object.keys(dto)) {
                 if(dto[key]) {

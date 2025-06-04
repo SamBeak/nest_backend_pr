@@ -9,23 +9,33 @@ import { UsersModel } from './users/entities/users.entity';
 import { PostsModule } from './posts/posts.module';
 import { PostsModel } from './posts/entities/posts.entity';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ENV_DB_HOST_KEY, ENV_DB_NAME_KEY, ENV_DB_PASSWORD_KEY, ENV_DB_PORT_KEY, ENV_DB_USERNAME_KEY } from './common/const/env-keys.const';
 
 @Module({
   imports: [
-		UsersModule,
-		TypeOrmModule.forRoot({
-			type: 'postgres',
-			host: '127.0.0.1',
-			port: 5432,
-			username: 'postgres',
-			password: 'postgres',
-			database: 'postgres',
-			entities: [
-				PostsModel,
-				UsersModel,
-			],
-			synchronize: true,
+		ConfigModule.forRoot({
+			envFilePath: '.env',
+			isGlobal: true,
 		}),
+		TypeOrmModule.forRootAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: (configSerivce: ConfigService) => ({
+				type: 'postgres',
+				host: configSerivce.get<string>(ENV_DB_HOST_KEY),
+				port: configSerivce.get<number>(ENV_DB_PORT_KEY),
+				username: configSerivce.get<string>(ENV_DB_USERNAME_KEY),
+				password: configSerivce.get<string>(ENV_DB_PASSWORD_KEY),
+				database: configSerivce.get<string>(ENV_DB_NAME_KEY),
+				synchronize: true,
+				entities: [
+					PostsModel,
+					UsersModel,
+				],
+			}),
+		}),
+		UsersModule,
 		AuthModule,
 		CommonModule,
 		PostsModule,
