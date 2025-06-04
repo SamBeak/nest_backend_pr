@@ -109,13 +109,13 @@ export class CommonService {
 					...this.parseOrderFilter(key, value),
 				}
 			}
-			
-			return {
-				where,
-				order,
-				take: dto.take,
-				skip: dto.page ? dto.take * (dto.page - 1) : null,
-			}
+		}
+		
+		return {
+			where,
+			order,
+			take: dto.take,
+			skip: dto.page ? dto.take * (dto.page - 1) : null,
 		}
 	}
 	
@@ -138,17 +138,17 @@ export class CommonService {
 		else if (split.length === 3) {
 			const [_, field, operator] = split;
 			
-			const values = value.toString().split(",");
+			// const values = value.toString().split(",");
 			
 			if(operator === "between") {
-				options[field] = FILTER_MAPPER[operator](values[0], values[1]);
+				options[field] = FILTER_MAPPER[operator](value[0], value[1]);
 			}
 			else if(operator === 'i_like') {
 				// LIKE %value% 쿼리와 같은 동작
 				options[field] = FILTER_MAPPER[operator](`%${value}%`);
 			}
 			else {
-				options[field] = FILTER_MAPPER[operator](values);
+				options[field] = FILTER_MAPPER[operator](value);
 			}
 		}
 		
