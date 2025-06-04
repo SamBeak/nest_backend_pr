@@ -5,8 +5,8 @@ import { FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
-import { API_URL } from 'src/common/const/env.const';
 import { CommonService } from 'src/common/common.service';
+import { ENV_HOST_KEY, ENV_PORT_KEY, ENV_PROTOCOL_KEY } from 'src/common/const/env-keys.const';
 
 @Injectable()
 export class PostsService {
@@ -73,7 +73,7 @@ export class PostsService {
         
         const lastItem = (posts.length > 0 && posts.length === dto.take) ? posts[posts.length - 1] : null;
         
-        const nextUrl = lastItem && new URL(`${API_URL}/posts`);
+        const nextUrl = lastItem && new URL(`${ENV_PROTOCOL_KEY}://${ENV_HOST_KEY}:${ENV_PORT_KEY}/posts`);
         if (nextUrl) {
             for(const key of Object.keys(dto)) {
                 if(dto[key]) {
@@ -129,7 +129,7 @@ export class PostsService {
         return post;
     }
     
-    async createPost(authorId: number, postDto: CreatePostDto,) {
+    async createPost(authorId: number, postDto: CreatePostDto, image?: string) {
         const post = this.postsRepository.create({
             author: {
                 id: authorId,
@@ -137,6 +137,7 @@ export class PostsService {
             ...postDto,
             likeCount: 0,
             commentCount: 0,
+			image,
         });
         
         const newPost = await this.postsRepository.save(post);
