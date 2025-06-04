@@ -24,7 +24,7 @@ import { ENV_DB_HOST_KEY, ENV_DB_NAME_KEY, ENV_DB_PASSWORD_KEY, ENV_DB_PORT_KEY,
 			useFactory: (configSerivce: ConfigService) => ({
 				type: 'postgres',
 				host: configSerivce.get<string>(ENV_DB_HOST_KEY),
-				port: configSerivce.get<number>(ENV_DB_PORT_KEY),
+				port: parseInt(configSerivce.get<string>(ENV_DB_PORT_KEY)),
 				username: configSerivce.get<string>(ENV_DB_USERNAME_KEY),
 				password: configSerivce.get<string>(ENV_DB_PASSWORD_KEY),
 				database: configSerivce.get<string>(ENV_DB_NAME_KEY),

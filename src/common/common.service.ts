@@ -4,7 +4,7 @@ import { BasePaginationDto } from './dto/base-pagination.dto';
 import { BaseModel } from './entities/base.entity';
 import { FILTER_MAPPER } from './const/filter-mapper.const';
 import { ConfigService } from '@nestjs/config';
-import { ENV_API_URL_KEY } from './const/env-keys.const';
+import { ENV_HOST_KEY, ENV_PORT_KEY, ENV_PROTOCOL_KEY } from './const/env-keys.const';
 
 @Injectable()
 export class CommonService {
@@ -60,7 +60,7 @@ export class CommonService {
 		
 		const lastItem = (results.length > 0 && results.length === dto.take) ? results[results.length - 1] : null;
         
-        const nextUrl = lastItem && new URL(`${this.configService.get<string>(ENV_API_URL_KEY)}/${path}`);
+        const nextUrl = lastItem && new URL(`${this.configService.get<string>(ENV_PROTOCOL_KEY)}://${this.configService.get<string>(ENV_HOST_KEY)}:${this.configService.get<string>(ENV_PORT_KEY)}/${path}`);
         if (nextUrl) {
             for(const key of Object.keys(dto)) {
                 if(dto[key]) {
