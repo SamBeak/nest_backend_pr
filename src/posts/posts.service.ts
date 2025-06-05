@@ -10,20 +10,26 @@ import { ENV_HOST_KEY, ENV_PORT_KEY, ENV_PROTOCOL_KEY } from 'src/common/const/e
 import { basename, join } from 'path';
 import { POSTS_IMAGE_PATH, TEMP_FOLDER_PATH } from 'src/common/const/path.const';
 import { promises } from 'fs';
+import { CreatePostImageDto } from './image/dto/create-image.dto';
+import { ImageModel } from 'src/common/entities/image.entity';
+import { DEFAULT_POST_FIND_OPTIONS } from './const/default-post-find-options.const';
 
 @Injectable()
 export class PostsService {
     constructor(
         @InjectRepository(PostsModel)
         private readonly postsRepository: Repository<PostsModel>,
+        @InjectRepository(ImageModel)
+		private readonly imageRepository: Repository<ImageModel>,
 		private readonly commonService: CommonService,
     ){}
     
     async getAllPosts() {
         return await this.postsRepository.find({
-			relations: ['author'],
+			...DEFAULT_POST_FIND_OPTIONS,
 		});
     }
+    
     async paginatePosts(dto: PaginatePostDto) {
 		// if (dto.page) {
 		// 	return this.pagePaginate(dto);
@@ -35,7 +41,7 @@ export class PostsService {
             dto,
             this.postsRepository,
             {
-                relations: ['author'],
+                relations: DEFAULT_POST_FIND_OPTIONS.relations,
             },
             'posts',
         );
@@ -119,10 +125,10 @@ export class PostsService {
     
     async getPostById(id: number,) {
         const post = await this.postsRepository.findOne({
+            ...DEFAULT_POST_FIND_OPTIONS,
             where: {
                 id,
             },
-			relations: ['author'],
         })
         
         if (!post) {
@@ -132,12 +138,12 @@ export class PostsService {
         return post;
     }
     
-    async createPostImage(dto: CreatePostDto) {
+    async createPostImage(dto: CreatePostImageDto) {
         
         // 파일 임시 저장 경로
 		const tempFilePath = join(
             TEMP_FOLDER_PATH,
-            dto.image,
+            dto.path,
         );
         
         // 파일 존재 확인
@@ -157,10 +163,15 @@ export class PostsService {
             fileName,
         );
         
+        // 파일 DB 저장
+        const result = await this.imageRepository.save({
+            ...dto,
+        });
+        
         // 파일 이동
         await promises.rename(tempFilePath, newPath);
         
-        return true;
+        return result;
 	}
     
     async createPost(authorId: number, postDto: CreatePostDto) {
@@ -169,6 +180,7 @@ export class PostsService {
                 id: authorId,
             },
             ...postDto,
+            images: [],
             likeCount: 0,
             commentCount: 0,
         });

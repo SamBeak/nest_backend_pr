@@ -6,11 +6,13 @@ import { PostsModel } from './entities/posts.entity';
 import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { CommonModule } from 'src/common/common.module';
+import { ImageModel } from 'src/common/entities/image.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       PostsModel,
+      ImageModel,
     ]),
     UsersModule,
     AuthModule,

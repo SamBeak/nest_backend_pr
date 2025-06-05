@@ -7,6 +7,7 @@ import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
+import { ImageModelType } from 'src/common/const/image-model.const';
 
 @Controller('posts')
 export class PostsController {
@@ -37,10 +38,18 @@ export class PostsController {
     @User('id') userId: number,
     @Body() body: CreatePostDto,
   ) {
-    await this.postsService.createPostImage(body);
     const post = await this.postsService.createPost(userId, body);
     
-    return post;
+    for (let i = 0; i < body.images.length; i++) {
+      await this.postsService.createPostImage({
+        post,
+        order: i,
+        path: body.images[i],
+        type: ImageModelType.POST_IMAGE,
+      });
+    }
+    
+    return this.postsService.getPostById(post.id);
   }
   
   @Patch(":postId")
