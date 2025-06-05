@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, InternalServerErrorException, Param, ParseIntPipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { User } from 'src/users/decorator/users.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -8,10 +8,16 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { ImageModelType } from 'src/common/const/image-model.const';
+import { DataSource } from 'typeorm';
+import { PostsImagesService } from './image/images.service';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+	private readonly postsService: PostsService,
+	private readonly dataSource: DataSource,
+	private readonly postsImagesService: PostsImagesService,
+) {}
   
   @Get()
   getPosts(
@@ -38,18 +44,33 @@ export class PostsController {
     @User('id') userId: number,
     @Body() body: CreatePostDto,
   ) {
-    const post = await this.postsService.createPost(userId, body);
+	const qr = this.dataSource.createQueryRunner();
+	qr.connect();
+	await qr.startTransaction();
     
-    for (let i = 0; i < body.images.length; i++) {
-      await this.postsService.createPostImage({
-        post,
-        order: i,
-        path: body.images[i],
-        type: ImageModelType.POST_IMAGE,
-      });
-    }
-    
-    return this.postsService.getPostById(post.id);
+	try {
+		const post = await this.postsService.createPost(userId, body, qr);
+		
+		for (let i = 0; i < body.images.length; i++) {
+		  await this.postsImagesService.createPostImage({
+			post,
+			order: i,
+			path: body.images[i],
+			type: ImageModelType.POST_IMAGE,
+		  }, qr);
+		}
+		
+		await qr.commitTransaction();
+		
+		return this.postsService.getPostById(post.id);
+	}
+	catch (e) {
+		await qr.rollbackTransaction();
+		throw new InternalServerErrorException('게시글 생성 중 오류가 발생했습니다.');
+	}
+	finally {
+		await qr.release();
+	}
   }
   
   @Patch(":postId")
