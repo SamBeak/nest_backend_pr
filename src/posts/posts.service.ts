@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostsModel } from './entities/posts.entity';
 import { FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
@@ -7,6 +7,9 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { CommonService } from 'src/common/common.service';
 import { ENV_HOST_KEY, ENV_PORT_KEY, ENV_PROTOCOL_KEY } from 'src/common/const/env-keys.const';
+import { basename, join } from 'path';
+import { POSTS_IMAGE_PATH, TEMP_FOLDER_PATH } from 'src/common/const/path.const';
+import { promises } from 'fs';
 
 @Injectable()
 export class PostsService {
@@ -129,7 +132,38 @@ export class PostsService {
         return post;
     }
     
-    async createPost(authorId: number, postDto: CreatePostDto, image?: string) {
+    async createPostImage(dto: CreatePostDto) {
+        
+        // 파일 임시 저장 경로
+		const tempFilePath = join(
+            TEMP_FOLDER_PATH,
+            dto.image,
+        );
+        
+        // 파일 존재 확인
+        try {
+            await promises.access(tempFilePath);
+        }
+        catch(e) {
+            throw new BadRequestException('존재하지 않는 파일입니다.');
+        }
+        
+        // 파일 이름 가져오기
+        const fileName = basename(tempFilePath);
+        
+        // 새로 이동할 폴더 경로 + 파일 이름
+        const newPath = join(
+            POSTS_IMAGE_PATH,
+            fileName,
+        );
+        
+        // 파일 이동
+        await promises.rename(tempFilePath, newPath);
+        
+        return true;
+	}
+    
+    async createPost(authorId: number, postDto: CreatePostDto) {
         const post = this.postsRepository.create({
             author: {
                 id: authorId,
@@ -137,7 +171,6 @@ export class PostsService {
             ...postDto,
             likeCount: 0,
             commentCount: 0,
-			image,
         });
         
         const newPost = await this.postsRepository.save(post);
