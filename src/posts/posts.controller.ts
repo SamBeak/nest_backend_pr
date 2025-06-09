@@ -8,8 +8,10 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { ImageModelType } from 'src/common/const/image-model.const';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner as QR } from 'typeorm';
 import { PostsImagesService } from './image/images.service';
+import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
+import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -40,37 +42,24 @@ export class PostsController {
     description: "게시글을 생성합니다.",
   })
   @UseGuards(AccessTokenGuard)
+  @UseInterceptors(TransactionInterceptor)
   async postPosts(
     @User('id') userId: number,
     @Body() body: CreatePostDto,
+	@QueryRunner() qr: QR,
   ) {
-	const qr = this.dataSource.createQueryRunner();
-	qr.connect();
-	await qr.startTransaction();
-    
-	try {
-		const post = await this.postsService.createPost(userId, body, qr);
-		
-		for (let i = 0; i < body.images.length; i++) {
-		  await this.postsImagesService.createPostImage({
-			post,
-			order: i,
-			path: body.images[i],
-			type: ImageModelType.POST_IMAGE,
-		  }, qr);
-		}
-		
-		await qr.commitTransaction();
-		
-		return this.postsService.getPostById(post.id);
+	const post = await this.postsService.createPost(userId, body, qr);
+	
+	for (let i = 0; i < body.images.length; i++) {
+		await this.postsImagesService.createPostImage({
+		post,
+		order: i,
+		path: body.images[i],
+		type: ImageModelType.POST_IMAGE,
+		}, qr);
 	}
-	catch (e) {
-		await qr.rollbackTransaction();
-		throw new InternalServerErrorException('게시글 생성 중 오류가 발생했습니다.');
-	}
-	finally {
-		await qr.release();
-	}
+	
+	return this.postsService.getPostById(post.id, qr);
   }
   
   @Patch(":postId")
