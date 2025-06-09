@@ -1,4 +1,4 @@
-import { Body, Controller, Get, InternalServerErrorException, Param, ParseIntPipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, InternalServerErrorException, Param, ParseIntPipe, Patch, Post, Query, UploadedFile, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { User } from 'src/users/decorator/users.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -12,6 +12,8 @@ import { DataSource, QueryRunner as QR } from 'typeorm';
 import { PostsImagesService } from './image/images.service';
 import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
+import { LogInterceptor } from 'src/common/interceptor/log.interceptor';
+import { HttpExceptionFilter } from 'src/common/exception-filter/http.exception-filter';
 
 @Controller('posts')
 export class PostsController {
@@ -22,6 +24,8 @@ export class PostsController {
 ) {}
   
   @Get()
+  @UseInterceptors(LogInterceptor)
+  @UseFilters(HttpExceptionFilter)
   getPosts(
     @Query() query: PaginatePostDto,
   ) {
