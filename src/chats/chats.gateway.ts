@@ -1,4 +1,4 @@
-import { ConnectedSocket, MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { ConnectedSocket, MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { ChatsService } from "./chats.service";
@@ -30,11 +30,21 @@ export class ChatsGateway implements OnGatewayConnection {
     }
     
     @SubscribeMessage('enter_chat')
-    enterChat(
+    async enterChat(
         // 방의 chat ID들을 리스트로 받는다
         @MessageBody() data : EnterChatDto,
         @ConnectedSocket() socket: Socket,
     ) {
+		for (const chatId of data.chatIds) {
+			const exists = await this.chatsService.checkIfChatExists(chatId);
+			
+			if (!exists) {
+				throw new WsException({
+					statusCode: 100,
+					message: `${chatId}는 존재하지 않는 채팅방입니다.`,
+				});
+			}
+		}
         socket.join(data.chatIds.map((x) => x.toString()));
     }
     
