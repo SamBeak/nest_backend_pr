@@ -50,7 +50,7 @@ export class PostsController {
   async postPosts(
     @User('id') userId: number,
     @Body() body: CreatePostDto,
-	@QueryRunner() qr: QR,
+	  @QueryRunner() qr: QR,
   ) {
 	const post = await this.postsService.createPost(userId, body, qr);
 	

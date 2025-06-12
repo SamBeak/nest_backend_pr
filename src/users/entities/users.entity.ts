@@ -1,6 +1,6 @@
 import { BaseModel } from "src/common/entities/base.entity";
 import { PostsModel } from "src/posts/entities/posts.entity";
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from "typeorm";
 import { RolesEnum } from "../const/roles.const";
 import { IsEmail, IsString, Length } from "class-validator";
 import { Exclude } from "class-transformer";
@@ -8,6 +8,7 @@ import { ValidationArguments } from "class-validator";
 import { LengthValidationMessage } from "src/common/validation-message/length-validation.message";
 import { stringValidationMessage } from "src/common/validation-message/string-validation.message";
 import { emailValidationMessage } from "src/common/validation-message/email-validation.message";
+import { ChatsModel } from "src/chats/entity/chats.entity";
 
 @Entity()
 export class UsersModel extends BaseModel {
@@ -51,4 +52,8 @@ export class UsersModel extends BaseModel {
 		default:RolesEnum.USER,
 	})
 	role: RolesEnum;
+	
+	@ManyToMany(() => ChatsModel, (chat) => chat.users)
+	@JoinTable()
+	chats: ChatsModel[];
 }
