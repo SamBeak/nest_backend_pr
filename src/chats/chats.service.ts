@@ -14,6 +14,16 @@ export class ChatsService {
         private readonly commonService: CommonService,
     ) {}
     
+    async checkIfChatExists(chatId: number) {
+        const exists = await this.chatsRepository.exists({
+            where: {
+                id: chatId,
+            },
+        })
+        
+        return exists;
+    }
+    
     paginateChats(dto: PaginateChatDto) {
         return this.commonService.paginate(
             dto,
