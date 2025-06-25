@@ -1,4 +1,4 @@
-import { Body, Controller, Get, InternalServerErrorException, Param, ParseIntPipe, Patch, Post, Query, UploadedFile, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, InternalServerErrorException, Param, ParseIntPipe, Patch, Post, Query, UploadedFile, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { User } from 'src/users/decorator/users.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -14,6 +14,9 @@ import { TransactionInterceptor } from 'src/common/interceptor/transaction.inter
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { LogInterceptor } from 'src/common/interceptor/log.interceptor';
 import { HttpExceptionFilter } from 'src/common/exception-filter/http.exception-filter';
+import { Roles } from 'src/users/decorator/roles.decorator';
+import { RolesEnum } from 'src/users/const/roles.const';
+import { IsPublic } from 'src/common/decorator/is-public.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -26,6 +29,7 @@ export class PostsController {
   @Get()
   @UseInterceptors(LogInterceptor)
   @UseFilters(HttpExceptionFilter)
+  @IsPublic()
   getPosts(
     @Query() query: PaginatePostDto,
   ) {
@@ -45,7 +49,7 @@ export class PostsController {
     summary: "게시글 생성",
     description: "게시글을 생성합니다.",
   })
-  @UseGuards(AccessTokenGuard)
+
   @UseInterceptors(TransactionInterceptor)
   async postPosts(
     @User('id') userId: number,
@@ -56,10 +60,10 @@ export class PostsController {
 	
 	for (let i = 0; i < body.images.length; i++) {
 		await this.postsImagesService.createPostImage({
-		post,
-		order: i,
-		path: body.images[i],
-		type: ImageModelType.POST_IMAGE,
+      post,
+      order: i,
+      path: body.images[i],
+      type: ImageModelType.POST_IMAGE,
 		}, qr);
 	}
 	
@@ -72,7 +76,6 @@ export class PostsController {
     summary: "게시글 수정",
     description: "게시글을 수정합니다.",
   })
-  @UseGuards(AccessTokenGuard)
   async patchPost(
     @Param('postId', ParseIntPipe) postId: number,
     @Body() body: UpdatePostDto,
@@ -81,10 +84,17 @@ export class PostsController {
   }
   
   @Post('random')
-  @UseGuards(AccessTokenGuard)
   async postPostsRandom(@User() user: UsersModel) {
     await this.postsService.generatePosts(user.id);
     
     return true;
+  }
+  
+  @Delete(":postId")
+  @Roles(RolesEnum.ADMIN)
+  deletePost(
+    @Param("postId", ParseIntPipe) postId: number,
+  ) {
+    return this.postsService.deletePost(postId);
   }
 }

@@ -187,6 +187,22 @@ export class PostsService {
         return newPost;
     }
     
+    async deletePost(postId: number) {
+        const post = await this.postsRepository.findOne({
+            where: {
+                id: postId,
+            },
+        })
+        
+        if (!post) {
+            throw new NotFoundException();
+        }
+        
+        await this.postsRepository.delete(postId);
+        
+        return postId;
+    }
+    
     async checkPostExistsById(postId: number) {
         return this.postsRepository.exists({
             where: {

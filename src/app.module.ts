@@ -8,7 +8,7 @@ import { CommonModule } from './common/common.module';
 import { UsersModel } from './users/entities/users.entity';
 import { PostsModule } from './posts/posts.module';
 import { PostsModel } from './posts/entities/posts.entity';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ENV_DB_HOST_KEY, ENV_DB_NAME_KEY, ENV_DB_PASSWORD_KEY, ENV_DB_PORT_KEY, ENV_DB_USERNAME_KEY } from './common/const/env-keys.const';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -20,6 +20,8 @@ import { ChatsModel } from './chats/entity/chats.entity';
 import { MessagesModel } from './chats/messages/entity/messages.entity';
 import { CommentsModule } from './posts/comments/comments.module';
 import { CommentsModel } from './posts/comments/entities/comments.entity';
+import { RolesGuard } from './users/guard/roles.guard';
+import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
 
 @Module({
   imports: [
@@ -65,6 +67,14 @@ import { CommentsModel } from './posts/comments/entities/comments.entity';
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: ClassSerializerInterceptor,
+		},
+		{
+			provide: APP_GUARD,
+			useClass: AccessTokenGuard, // accessTokenGuard를 global guard로 등록, 예외는 @PublicApi로 설정
+		},
+		{
+			provide: APP_GUARD,
+			useClass: RolesGuard,
 		},
 	],
 })
