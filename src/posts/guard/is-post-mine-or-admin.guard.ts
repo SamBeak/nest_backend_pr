@@ -5,7 +5,7 @@ import { Request } from "express";
 import { UsersModel } from "src/users/entities/users.entity";
 
 @Injectable()
-export class IsPostMineOrAdmin implements CanActivate {
+export class IsPostMineOrAdminGuard implements CanActivate {
     constructor(
         private readonly postsService: PostsService,
     ){}
