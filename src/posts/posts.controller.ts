@@ -17,6 +17,7 @@ import { HttpExceptionFilter } from 'src/common/exception-filter/http.exception-
 import { Roles } from 'src/users/decorator/roles.decorator';
 import { RolesEnum } from 'src/users/const/roles.const';
 import { IsPublic } from 'src/common/decorator/is-public.decorator';
+import { IsPostMineOrAdmin } from './guard/is-post-mine-or-admin.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -37,6 +38,7 @@ export class PostsController {
   }
   
   @Get(':id')
+  @IsPublic()
   getPost(
     @Param('id', ParseIntPipe) id: number,
   ) {
@@ -76,6 +78,7 @@ export class PostsController {
     summary: "게시글 수정",
     description: "게시글을 수정합니다.",
   })
+  @UseGuards(IsPostMineOrAdmin)
   async patchPost(
     @Param('postId', ParseIntPipe) postId: number,
     @Body() body: UpdatePostDto,
