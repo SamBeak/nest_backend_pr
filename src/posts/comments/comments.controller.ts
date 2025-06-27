@@ -7,6 +7,7 @@ import { User } from 'src/users/decorator/users.decorator';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { UpdateCommentsDto } from './dto/update-comments.dto';
 import { IsPublic } from 'src/common/decorator/is-public.decorator';
+import { IsCommentMineOrAdminGuard } from './guard/is-comment-mine-or-admin.guard';
 
 @Controller('posts/:postId/comments')
 export class CommentsController {
@@ -49,6 +50,7 @@ export class CommentsController {
   }
   
   @Delete(":commentId")
+  @UseGuards(IsCommentMineOrAdminGuard)
   async deleteComment(
     @Param('commentId', ParseIntPipe) commentId: number,
   ){
