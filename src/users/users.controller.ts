@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Controller, DefaultValuePipe, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, DefaultValuePipe, Delete, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './decorator/users.decorator';
 import { UsersModel } from './entities/users.entity';
@@ -36,6 +36,16 @@ export class UsersController {
     @Param('id', ParseIntPipe) followerId: number,
   ) {
     await this.usersService.confirmFollow(followerId, user.id);
+    
+    return true;
+  }
+  
+  @Delete('follow/:id')
+  async deleteFollow(
+    @User() user: UsersModel,
+    @Param('id', ParseIntPipe) followeeId: number,
+  ) {
+    await this.usersService.deleteFollow(user.id, followeeId);
     
     return true;
   }
