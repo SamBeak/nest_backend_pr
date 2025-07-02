@@ -11,6 +11,7 @@ import { emailValidationMessage } from "src/common/validation-message/email-vali
 import { ChatsModel } from "src/chats/entity/chats.entity";
 import { MessagesModel } from "src/chats/messages/entity/messages.entity";
 import { CommentsModel } from "src/posts/comments/entities/comments.entity";
+import { UserFollowersModel } from "./user-followers.entity";
 
 @Entity()
 export class UsersModel extends BaseModel {
@@ -64,4 +65,10 @@ export class UsersModel extends BaseModel {
 	
 	@OneToMany(() => CommentsModel, (comment) => comment.user)
 	postComments: CommentsModel[];
+	
+	@OneToMany(() => UserFollowersModel, (ufm) => ufm.follower)
+	followers: UserFollowersModel[];
+	
+	@OneToMany(() => UserFollowersModel, (ufm) => ufm.followee)
+	followees: UserFollowersModel[];
 }
