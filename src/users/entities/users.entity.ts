@@ -71,4 +71,14 @@ export class UsersModel extends BaseModel {
 	
 	@OneToMany(() => UserFollowersModel, (ufm) => ufm.followee)
 	followees: UserFollowersModel[];
+	
+	@Column({
+		default: 0,
+	})
+	followersCount: number;
+	
+	@Column({
+		default: 0,
+	})
+	followeesCount: number;
 }
