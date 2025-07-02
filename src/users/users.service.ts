@@ -32,41 +32,32 @@ export class UsersService {
 		return this.usersRepository.save(newUser);
 	}
 	
-	async getFollowers(userId: number): Promise<UserFollowersModel[]> {
-		const user = await this.usersRepository.findOne({
+	async getFollowers(userId: number): Promise<UsersModel[]> {
+		const result = await this.userFollowersRepository.find({
 			where: {
-				id: userId,
+				followee: {
+					id: userId,
+				},
 			},
 			relations: {
-				followers: true,
+				follower: true,
+				followee: true,
 			}
-		});
+		})
 		
-		return user.followers;
+		return result.map((ufm) => ufm.follower);
 	}
 	
 	async followUser(followerId: number, followeeId: number) {
-		const user = await this.usersRepository.findOne({
-			where: {
+		const result = await this.userFollowersRepository.save({
+			follower: {
 				id: followerId,
 			},
-			relations: {
-				followees: true,
-			}
-		});
+			followee: {
+				id: followeeId,
+			},
+		})
 		
-		if(!user){
-			throw new BadRequestException(`존재하지 않는 팔로워입니다.`);
-		}
-		
-		await this.usersRepository.save({
-			...user,
-			followees: [
-				...user.followees,
-				{
-					id: followeeId,
-				},
-			],
-		});
+		return true;
 	}
  }
