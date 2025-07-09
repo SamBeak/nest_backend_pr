@@ -23,6 +23,8 @@ import { CommentsModel } from './posts/comments/entities/comments.entity';
 import { RolesGuard } from './users/guard/roles.guard';
 import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
 import { UserFollowersModel } from './users/entities/user-followers.entity';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-ioredis';
 
 @Module({
   imports: [
@@ -33,6 +35,12 @@ import { UserFollowersModel } from './users/entities/user-followers.entity';
 		ServeStaticModule.forRoot({
 			rootPath: PUBLIC_FOLDER_PATH,
 			serveRoot: "/public",
+		}),
+		CacheModule.register({
+			store: redisStore,
+			host: 'redis', // redis docker container의 이름
+			port: 6379,
+			ttl: 60 * 60 * 24,
 		}),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
